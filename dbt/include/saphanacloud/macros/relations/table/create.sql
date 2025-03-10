@@ -44,22 +44,19 @@
 
   {%- if contract_config.enforced and not temporary -%}
     {% set create_sql %}
+
           {{ get_assert_columns_equivalent(sql) }}
-          
-          {%- set sql = get_select_subquery(sql) %}
         
             CREATE {{ temp_table }}{{ type }} TABLE {{ relation }} {{ get_table_columns_and_constraints() }};
             
+            INSERT INTO 
+            {{ relation }} 
+            {%- set sql = get_select_subquery(sql) %}
+            ({{ sql }});
+
     {% endset %}
 
-    {% set insert_sql %}
-          INSERT INTO 
-          {{ relation }} 
-          {%- set sql = get_select_subquery(sql) %}
-          ({{ sql }});
-    {% endset %}
-
-    {% do return(create_sql ~ insert_sql) %}
+    {% do return(create_sql) %}
   {% else %}
     {% set create_sql %}
       CREATE {{ temp_table }}{{ type }} TABLE {{ relation }} AS (
@@ -71,4 +68,3 @@
 
 
 {% endmacro %}
-

@@ -14,7 +14,7 @@
 
     -- If the view exists, drop it
     IF view_exists = 1 THEN
-        EXEC 'DROP VIEW "' || UPPER('{{ schema_name }}') || '"."' || UPPER('{{ view_name }}') || '"';
+        EXEC 'DROP VIEW {{ view_relation }}';
     END IF;
   END;
   {% endset %}

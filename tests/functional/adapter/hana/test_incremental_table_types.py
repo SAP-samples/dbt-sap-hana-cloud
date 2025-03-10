@@ -62,7 +62,7 @@ class BaseIncrementalPredicates:
         model_count = len(run_dbt(["run", "--select", incremental_model, "--full-refresh"]))
 
         # Count rows in the seed table
-        row_count_query = f"SELECT * FROM {project.test_schema}.{seed}"
+        row_count_query = f'SELECT * FROM "{project.test_schema}"."{seed}"'
         seed_rows = len(project.run_sql(row_count_query, fetch="all"))
 
         # Run incremental updates
@@ -78,8 +78,8 @@ class BaseIncrementalPredicates:
         query = f"""
         SELECT IS_COLUMN_TABLE
         FROM TABLES
-        WHERE SCHEMA_NAME = '{schema_name.upper()}'
-          AND TABLE_NAME = '{table_name.upper()}';
+        WHERE SCHEMA_NAME = '{schema_name}'
+          AND TABLE_NAME = '{table_name}';
         """
         result = project.run_sql(query, fetch="one")
         assert result is not None, f"Table {schema_name}.{table_name} does not exist."
@@ -145,6 +145,3 @@ class BaseIncrementalPredicates:
 
         # Assert correctness, including table type
         self.check_scenario_correctness(expected_fields, test_case_fields, project, expected_table_type)
-
-
-

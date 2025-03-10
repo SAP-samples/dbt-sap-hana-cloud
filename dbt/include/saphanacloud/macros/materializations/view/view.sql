@@ -39,7 +39,7 @@
    {% set sql = model.compiled_sql %}
 
 
-   {% call statement('main') %}
+   {% call statement('main', fetch_result=True) %}
      {{ saphanacloud__create_or_replace_view(target_relation, sql) }}
    {% endcall %}
 

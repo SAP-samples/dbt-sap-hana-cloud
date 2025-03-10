@@ -17,6 +17,6 @@
     (
         select {{ dest_cols_csv }}
         from {{ temp_relation }}
-    )
+    );
     {% endif %}
 {% endmacro %}

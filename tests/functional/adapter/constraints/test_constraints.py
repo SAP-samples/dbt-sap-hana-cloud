@@ -30,6 +30,8 @@ from dbt.tests.adapter.constraints.test_constraints import (
 )
 
 _expected_sql_hana = """
+DO
+BEGIN
 create table <model_identifier>(
     "id" integer not null primary key,
     check ("id" > 0),
@@ -47,6 +49,7 @@ insert into <model_identifier>(
         to_date('2019-01-01','yyyy-mm-dd')as date_day 
         from dummy)
     model_subq);
+END;
 """
 
 
@@ -139,7 +142,7 @@ class TestHanaTableConstraintsRollback(BaseConstraintsRollback):
 
     @pytest.fixture(scope="class")
     def expected_error_messages(self):
-        return ["constraint NOT NULL violation;checkNotNullColumn(): found NULL on pos 0,column 'id'"]
+        return ['cannot insert NULL or update to NULL: "USR_AYVM3D4C3AYWKTWMVUC8U518I"."(DO statement)"']
 
 
 class TestHanaIncrementalConstraintsRuntimeDdlEnforcement(
@@ -171,7 +174,7 @@ class TestHanaIncrementalConstraintsRollback(BaseIncrementalConstraintsRollback)
 
         @pytest.fixture(scope="class")
         def expected_error_messages(self):
-            return ["constraint NOT NULL violation;checkNotNullColumn(): found NULL on pos 0,column 'id'"]
+            return ['cannot insert NULL or update to NULL: "USR_AYVM3D4C3AYWKTWMVUC8U518I"."(DO statement)"']
 
 
 class TestHanaModelConstraintsRuntimeEnforcement(BaseModelConstraintsRuntimeEnforcement):
@@ -185,6 +188,8 @@ class TestHanaModelConstraintsRuntimeEnforcement(BaseModelConstraintsRuntimeEnfo
     @pytest.fixture(scope="class")
     def expected_sql(self):
         return """
+    DO
+    BEGIN
     create table <model_identifier> (
         "id" integer not null,
         color char(20),
@@ -205,5 +210,5 @@ class TestHanaModelConstraintsRuntimeEnforcement(BaseModelConstraintsRuntimeEnfo
             to_date('2019-01-01','yyyy-mm-dd')as date_day 
             from dummy)
     model_subq);
+    END;
     """
-

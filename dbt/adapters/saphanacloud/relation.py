@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, FrozenSet, Type
-from dbt.adapters.base.relation import BaseRelation
+from dbt.adapters.base.relation import BaseRelation, Policy
 from dbt.adapters.contracts.relation import RelationType
 from dbt.adapters.relation_configs import RelationConfigBase
 from dbt_common.exceptions import DbtRuntimeError
@@ -14,9 +14,23 @@ from dbt.adapters.relation_configs import (
     RelationConfigChangeAction
 )
 
+@dataclass
+class SapHanaCloudQuotePolicy(Policy):
+    database: bool = False
+    schema: bool = True
+    identifier: bool = True
+
+@dataclass
+class SapHanaCloudIncludePolicy(Policy):
+    database: bool = False
+    schema: bool = True
+    identifier: bool = True
 
 @dataclass(frozen=True, eq=False, repr=False)
 class SapHanaCloudRelation(BaseRelation):
+    quote_policy: Policy = field(default_factory=lambda: SapHanaCloudQuotePolicy())
+    include_policy: Policy = field(default_factory=lambda: SapHanaCloudIncludePolicy())
+    quote_character: str = '"'
     DEFAULTS = {
         'type': None,
     }
@@ -39,11 +53,6 @@ class SapHanaCloudRelation(BaseRelation):
             RelationType.View,
         })
     )
-
-    def __init__(self, *args, **kwargs):
-        # Filter out any keyword arguments not supported by the superclass
-        supported_kwargs = {key: kwargs[key] for key in kwargs if key not in ['schema', 'identifier', 'database']}
-        super().__init__(*args, **supported_kwargs)
 
     @classmethod
     def get_relation_type(cls) -> Type[RelationType]:
@@ -76,14 +85,7 @@ class SapHanaCloudRelation(BaseRelation):
     def from_dict(cls, value: Dict):
         return super().from_dict(value)
 
-    def render(self) -> str:
-        # Ensure all parts are strings before joining
-        return ".".join(
-            str(part) for part in filter(None, [
-                self.schema,   # Ensure this is not a list
-                self.identifier      # Ensure this is not a list
-            ])
-        )
+
     
     def _get_index_config_changes(
         self,
@@ -119,3 +121,6 @@ class SapHanaCloudRelation(BaseRelation):
             for index in new_indexes.difference(existing_indexes)
         ]
         return drop_changes + create_changes
+    
+    def __post_init__(self):
+        object.__setattr__(self, 'include_policy', SapHanaCloudIncludePolicy(database=False, schema=True, identifier=True))

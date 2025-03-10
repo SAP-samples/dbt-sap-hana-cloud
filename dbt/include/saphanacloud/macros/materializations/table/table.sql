@@ -1,5 +1,4 @@
 {% materialization table, adapter='saphanacloud', supported_languages=['sql', 'python'] -%}
-
   {% set relation = adapter.dispatch('list_relations_without_caching')(adapter.Relation.create(schema=this.schema)) %}
   
 
@@ -42,30 +41,22 @@
   {% set code = 'OK'%}
   {% set rows_affected = "" %}
    {%- if contract_config.enforced and not temporary -%}
-   
-    {% set build_sql = saphanacloud__create_table_as(False, intermediate_relation, model.compiled_sql, language) %} 
-    {% set statements = build_sql.split(';') %} 
-
-    {% for statement in statements %}
-        {% set trimmed_statement = statement.strip() %}  {# Remove extra whitespace #}
-
-        {% if trimmed_statement != '' %} 
-            {% do run_query(trimmed_statement) %} 
-        {% endif %}
-    {% endfor %}
-
-    {%- call noop_statement('main', code ~ '' ~ rows_affected, code, rows_affected) -%}
-      {{ saphanacloud__create_table_as(False, target_relation, model.compiled_sql, language) }}
+    {% set build_sql = saphanacloud__create_table_as(False, intermediate_relation, model.compiled_sql, language) %}
+    {%- call statement('main', fetch_result=True) -%}
+      DO
+      BEGIN
+      {{build_sql}}
+      END;
     {%- endcall -%}
 
    {% elif not is_incremental() %}
-   
     {% set build_sql = saphanacloud__create_table_as(False, intermediate_relation, model.compiled_sql, language) %} 
-    {% do run_query(build_sql) %} 
-
-    {%- call noop_statement('main', code ~ ' ' ~ rows_affected, code, rows_affected) -%}
-      {{ saphanacloud__create_table_as(False, target_relation, model.compiled_sql, language) }}
-    {%- endcall -%}
+      {%- call statement('main', fetch_result=True) -%}
+        DO
+        BEGIN
+        {{build_sql}}
+        END;
+      {%- endcall -%}
   {% else %}
     {%- call statement('main', fetch_result=True) -%}
       INSERT INTO {{ intermediate_relation }} (

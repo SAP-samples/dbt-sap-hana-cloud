@@ -195,12 +195,25 @@ class SapHanaCloudConnectionManager(SQLConnectionManager):
     @classmethod
     def get_response(cls, cursor) -> AdapterResponse:
         # Customize this method to extract meaningful information from the SAP HANA cursor
-        # Since statusmessage and statuscode don't exist, you might need to adjust accordingly.
-
-        # Example: Assume rows affected as cursor.rowcount, and message as a static "OK"
+        num_rows = 0
+        activity = "success"
         message = "OK"
-        rows = cursor.rowcount if cursor.rowcount >= 0 else 0
-        return AdapterResponse(_message=message, rows_affected=rows)
+        try:
+            if cursor is not None:
+                if cursor.rowcount is not None:
+                    num_rows = cursor.rowcount
+
+            message = f"OK {num_rows}"
+
+        except Exception as e:
+            activity = "error"
+            message = f"An error occurred: {str(e)}"
+
+        return AdapterResponse(
+        _message=message,
+        rows_affected=num_rows,
+        code=activity
+        )
 
     @contextmanager
     def exception_handler(self, sql: str):

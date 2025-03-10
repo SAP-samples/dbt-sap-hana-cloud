@@ -2,7 +2,7 @@
   {%- set column_override = model['config'].get('column_types', {}) -%}
   {%- set quote_seed_column = model['config'].get('quote_columns', None) -%}
 
-  {%- set default_string_type = 'VARCHAR(50)' -%}  {# Force NVARCHAR(50) for all string columns #}
+  {%- set default_string_type = 'VARCHAR(5000)' -%} 
 
   {% set sql %}
     create table {{ this.render() }} (
@@ -10,7 +10,6 @@
             {%- set inferred_type = adapter.convert_type(agate_table, loop.index0) | lower -%}
             {%- set column_name = (col_name | string) -%}
 
-            {# Force NVARCHAR(50) if inferred type is string #}
             {%- if col_name in column_override %}
               {%- set type = column_override.get(col_name) -%}
             {%- else %}
@@ -85,5 +84,3 @@
 
     {{ return(sql) }}
 {% endmacro %}
-
-

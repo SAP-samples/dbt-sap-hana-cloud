@@ -1,7 +1,3 @@
-/* For examples of how to fill out the macros please refer to the postgres adapter and docs
-postgres adapter macros: https://github.com/dbt-labs/dbt-core/blob/main/plugins/postgres/dbt/include/postgres/macros/adapters.sql
-dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
-*/
 
 {% macro saphanacloud__alter_column_type(relation,column_name,new_column_type) -%}
   ALTER TABLE {{ column.relation }} AFTER COLUMN {{ column.name }} SET DATA TYPE {{ new_data_type}};
@@ -10,10 +6,6 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 {% macro saphanacloud__check_schema_exists(schema_name) -%}
   SELECT COUNT(*) > 0 FROM SYS.SCHEMAS WHERE SCHEMA_NAME = '{{ schema_name.upper() }}';
 {% endmacro %}
-
---  Example from postgres adapter in dbt-core
---  Notice how you can build out other methods than the designated ones for the impl.py file,
---  to make a more robust adapter. ex. (verify_database)
 
 {% macro saphanacloud__check_index_exists(relation, index_name) -%}
   {%- set schema_name = relation.schema -%}
@@ -65,40 +57,24 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
   {%- endif -%}
 {%- endmacro -%}
 
-/*
-
- {% macro postgres__create_schema(relation) -%}
-   {% if relation.database -%}
-    {{ adapter.verify_database(relation.database) }}
-  {%- endif -%}   {%- call statement('create_schema') -%}
-     create schema if not exists {{ relation.without_identifier().include(database=False) }}
-   {%- endcall -%}
- {% endmacro %}
- 
-*/
-
 {% macro saphanacloud__create_schema(schema_name) %}
-  {%- call statement('schema_name') -%}
-    -- for not breaking tests, Hana
-    -- schemas are actualy users, we can't
-    -- create it here
-    select 'a' from DUMMY
-  {%- endcall -%}
+  {% set schema_check_query %}
+    SELECT SCHEMA_NAME
+    FROM SCHEMAS
+    WHERE SCHEMA_NAME = '{{ schema_name }}'
+  {% endset %}
+
+  {% set schema_exists %}
+    {{ run_query(schema_check_query).rows | length > 0 }}
+  {% endset %}
+
+  {% if not schema_exists %}
+    {%- call statement('schema_name') -%}
+      CREATE SCHEMA {{ schema_name }};
+    {%- endcall -%}
+  {% endif %}
 
 {% endmacro %}
-
-/*
-
-{% macro postgres__drop_schema(relation) -%}
-  {% if relation.database -%}
-    {{ adapter.verify_database(relation.database) }}
-  {%- endif -%}
-  {%- call statement('drop_schema') -%}
-    drop schema if exists {{ relation.without_identifier().include(database=False) }} cascade
-  {%- endcall -%}
-{% endmacro %}
-
-*/
 
 {% macro saphanacloud__drop_relation(relation) -%}
 {%- if relation is not none -%}
@@ -117,31 +93,8 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 {% endmacro %}
 
 {% macro saphanacloud__drop_schema(relation) -%}
- DROP SCHEMA {{ relation.schema.upper( )}} CASCADE;
+ DROP SCHEMA '{{ relation.schema }}' CASCADE;
 {% endmacro %}
-
-/*
-
- Example of 1 of 3 required macros that does not have a default implementation
-{% macro postgres__get_columns_in_relation(relation) -%}
-  {% call statement('get_columns_in_relation', fetch_result=True) %}
-      select
-          column_name,
-          data_type,
-          character_maximum_length,
-          numeric_precision,
-          numeric_scale
-      from {{ relation.information_schema('columns') }}
-      where table_name = '{{ relation.identifier }}'
-        {% if relation.schema %}
-        and table_schema = '{{ relation.schema }}'
-        {% endif %}
-      order by ordinal_position
-  {% endcall %}
-  {% set table = load_result('get_columns_in_relation').table %}
-  {{ return(sql_convert_columns_in_relation(table)) }}
-{% endmacro %}
-*/
 
 
 {% macro saphanacloud__get_columns_in_relation(relation) %}
@@ -161,8 +114,8 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
               FROM
                   SYS.TABLE_COLUMNS
               WHERE
-                  SCHEMA_NAME = upper('{{ relation.schema }}')
-                  AND TABLE_NAME = upper('{{ relation.identifier }}')
+                  SCHEMA_NAME = ('{{ relation.schema }}')
+                  AND TABLE_NAME = ('{{ relation.identifier }}')
 
               UNION ALL
 
@@ -179,8 +132,8 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
               FROM
                   SYS.VIEW_COLUMNS
               WHERE
-                  SCHEMA_NAME = upper('{{ relation.schema }}')
-                  AND VIEW_NAME = upper('{{ relation.identifier }}')
+                  SCHEMA_NAME = ('{{ relation.schema }}')
+                  AND VIEW_NAME = ('{{ relation.identifier }}')
             )
 
             -- Final select to retrieve the column information
@@ -201,32 +154,6 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
     {{ return(sql_convert_columns_in_relation(table)) }} 
 {% endmacro %}
 
---  Example of 2 of 3 required macros that do not come with a default implementation
-
-/*
-
-{% macro postgres__list_relations_without_caching(schema_relation) %}
-  {% call statement('list_relations_without_caching', fetch_result=True) -%}
-    select
-      '{{ schema_relation.database }}' as database,
-      tablename as name,
-      schemaname as schema,
-      'table' as type
-    from pg_tables
-    where schemaname ilike '{{ schema_relation.schema }}'
-    union all
-    select
-      '{{ schema_relation.database }}' as database,
-      viewname as name,
-      schemaname as schema,
-      'view' as type
-    from pg_views
-    where schemaname ilike '{{ schema_relation.schema }}'
-  {% endcall %}
-  {{ return(load_result('list_relations_without_caching').table) }}
-{% endmacro %}
-
-*/
 
 {% macro saphanacloud__get_timestamp_field(relation) %}
     {% set query %}
@@ -486,10 +413,3 @@ Example 3 of 3 of required macros that does not have a default implementation.
     {% endif %}
     
 {% endmacro %}
-
-
-
-
-
-
-

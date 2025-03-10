@@ -154,25 +154,17 @@
 
   {% endif %}
 
-    {#-- byuld sql block--#}
-    {% set statements = build_sql.split(';') %}  {# Split the SQL by semicolon #}
-    {% for statement in statements %}
-        {% set trimmed_statement = statement.strip() %}  {# Remove extra whitespace #}
-        {% if trimmed_statement != '' %} 
-            {% do run_query(trimmed_statement) %} 
-        {% endif %}
-    {% endfor %}
-    
+    {%- call statement('main', fetch_result=True) -%}
+      DO
+      BEGIN
+      {{build_sql}}
+      END;
+    {%- endcall -%}
+
     {#-- unique as primary key alter sql block--#}
     {% if not existing_pk_columns and unique_as_primary %}
       {% do run_query(alter_sql) %}
     {% endif %}
-
-    {#-- sql compiled file--#}
-    {%- call noop_statement('main', code ~ ' ' ~ rows_affected, code, rows_affected) -%}
-      {{ build_sql }}
-      {{ alter_sql }}
-    {%- endcall -%}
 
   {% do drop_relation(tmp_relation) %}
 

@@ -12,7 +12,7 @@
             AND UPPER(TABLE_NAME) = UPPER('{{ table_name }}');
             
             IF v_table_exists > 0 THEN
-                EXECUTE IMMEDIATE 'DROP TABLE "' || UPPER('{{ schema_name }}') || '"."' || UPPER('{{ table_name }}') || '"';
+                EXECUTE IMMEDIATE 'DROP TABLE {{ relation }}';
             END IF;
         END;
     {% endset %}
@@ -20,6 +20,3 @@
     {{ return(query) }}
 
 {% endmacro %}
-
-
-

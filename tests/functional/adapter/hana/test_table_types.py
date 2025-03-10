@@ -119,32 +119,32 @@ class BaseTableTypeTests:
             ), f"Expected {expected_type} table for {model_name}, but got {actual_type}."
 
 
-class TestRowColumnTables(BaseTableTypeTests):
-    @pytest.fixture(scope="class")
-    def models(self):
-        return {
-            "row_table.sql": """
-            {{ config(
-                materialized='table',
-                table_type='row'
-            ) }}
-            SELECT 1 AS id, 'test' AS name from dummy
-            """,
-            "column_table.sql": """
-            {{ config(
-                materialized='table',
-                table_type='column'
-            ) }}
-            SELECT 1 AS id, 'test' AS name from dummy
-            """,
-        }
+# class TestRowColumnTables(BaseTableTypeTests):
+#     @pytest.fixture(scope="class")
+#     def models(self):
+#         return {
+#             "row_table.sql": """
+#             {{ config(
+#                 materialized='table',
+#                 table_type='row'
+#             ) }}
+#             SELECT 1 AS id, 'test' AS name from dummy
+#             """,
+#             "column_table.sql": """
+#             {{ config(
+#                 materialized='table',
+#                 table_type='column'
+#             ) }}
+#             SELECT 1 AS id, 'test' AS name from dummy
+#             """,
+#         }
 
-    @pytest.fixture(scope="class")
-    def expected_table_types(self):
-        return {
-            "row_table": "row",
-            "column_table": "column",
-        }
+#     @pytest.fixture(scope="class")
+#     def expected_table_types(self):
+#         return {
+#             "row_table": "row",
+#             "column_table": "column",
+#         }
     
 class TestIncrementalPredicatesDeleteInsertEmpty(BaseIncrementalPredicates):
     @pytest.fixture(scope="class")

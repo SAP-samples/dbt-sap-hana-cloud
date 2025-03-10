@@ -96,8 +96,8 @@ class TestIncrementalUniqueKeyAsPrimary:
         unique_key_query = f"""
             SELECT COLUMN_NAME
             FROM CONSTRAINTS
-            WHERE SCHEMA_NAME = '{project.test_schema.upper()}'
-              AND TABLE_NAME = '{model_name.upper()}'
+            WHERE SCHEMA_NAME = '{project.test_schema}'
+              AND TABLE_NAME = '{model_name}'
               AND IS_PRIMARY_KEY = 'TRUE';
         """
         result = project.run_sql(unique_key_query, fetch="all")
@@ -119,8 +119,8 @@ class TestIncrementalUniqueKeyAsPrimary:
         unique_key_query = f"""
             SELECT COLUMN_NAME
             FROM CONSTRAINTS
-            WHERE SCHEMA_NAME = '{project.test_schema.upper()}'
-              AND TABLE_NAME = '{model_name.upper()}'
+            WHERE SCHEMA_NAME = '{project.test_schema}'
+              AND TABLE_NAME = '{model_name}'
               AND IS_PRIMARY_KEY = 'TRUE';
         """
         result = project.run_sql(unique_key_query, fetch="all")
@@ -142,4 +142,3 @@ class TestIncrementalUniqueKeyAsPrimaryInvalidConfig:
         results, output = run_dbt_and_capture(expect_pass=False)
         assert len(results) == 1
         assert re.search(r"`unique_as_primary` must be a boolean.", output)
-

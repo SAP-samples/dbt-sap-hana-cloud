@@ -1,9 +1,9 @@
 {% macro saphanacloud__get_show_grant_sql(relation) %}
     SELECT *
     FROM GRANTED_PRIVILEGES
-    WHERE OBJECT_NAME = UPPER('{{ relation.identifier }}')
+    WHERE OBJECT_NAME = ('{{ relation.identifier }}')
     {% if relation.schema %}
-        AND SCHEMA_NAME = UPPER('{{ relation.schema }}')
+        AND SCHEMA_NAME = ('{{ relation.schema }}')
     {% endif %}
 {% endmacro %}
 

@@ -17,7 +17,7 @@ prompts:
   dbname:
     hint: "default database"
     default: "{{ env_var('DBT_HANA_DATABASE') }}"
-  scahema:
+  schema:
     hint: "default database"
     default: "{{ env_var('DBT_HANA_SCHEMA') }}"
   threads:

@@ -27,9 +27,9 @@ SELECT * FROM {{ ref('seed') }}
 # seeds/add_new_rows.sql
 seeds__add_new_rows_sql = """
 -- insert two new rows, both of which should be in incremental model
-INSERT INTO {schema}.seed (user_id, user_name, birth_date, income, last_login_date) VALUES 
+INSERT INTO "{schema}"."seed" (user_id, user_name, birth_date, income, last_login_date) VALUES 
         (2, 'Lillian Sr.', '1982-02-03', 200000, '2022-05-01 06:01:31');
-INSERT INTO {schema}.seed (user_id, user_name, birth_date, income, last_login_date) VALUES 
+INSERT INTO "{schema}"."seed" (user_id, user_name, birth_date, income, last_login_date) VALUES 
         (5, 'John Doe', '1992-10-01', 300000, '2022-06-01 06:01:31');
 """
 
@@ -120,7 +120,7 @@ class TestIncrementalMergeUpdateColumns:
         assert len(results) == 1
 
         # Validate the data for user_id 2
-        user_id_2_query = 'SELECT * FROM {}.{} WHERE user_id = {}'.format(project.test_schema,
+        user_id_2_query = 'SELECT * FROM "{}"."{}" WHERE user_id = {}'.format(project.test_schema,
                                                                               'my_incr_model',
                                                                               2)
         expected_result = [(2, 'Lillian Sr.',
@@ -135,7 +135,7 @@ class TestIncrementalMergeUpdateColumns:
         assert normalized_result == expected_result
 
         # Validate the data for user_id 5
-        used_id_5_query = 'SELECT * FROM {}.{} WHERE user_id = {}'.format(project.test_schema,
+        used_id_5_query = 'SELECT * FROM "{}"."{}" WHERE user_id = {}'.format(project.test_schema,
                                                                               'my_incr_model',
                                                                               5)
         expected_result = [(5, 'John Doe',

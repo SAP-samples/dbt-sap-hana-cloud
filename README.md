@@ -28,29 +28,22 @@ hdbcli>=2.22.32
   use the same name which you gave above.
 
 ## Download and Installation
-**Step 1.** Install dbt 
-```
- python3 -m pip install dbt-core==1.9.0
-```
-**Step 2.** Install hdbcli 
-```
- pip3 install hdbcli
-```
-**Step 3.** Install dbt-sap-hana-cloud adapter
+**Step 1.** Install dbt-sap-hana-cloud adapter
 1. Clone the dbt-sap-hana-cloud repositroy
 2. Navigate to the cloned repository
     > cd /path/to/dbt-sap-hana-cloud
 3. for installation use the below command 
     ```
-    pip3 install -e .
+    pip3 install .
     ```
 
-**Step 4.** Create a dbt project 
+**Step 2.** Create a dbt project 
 - Initialize a New dbt Project in a different location
   ```
   dbt init
   ```
-**Step 5.** Profile setup
+  choose dbt-saphanacloud from the list and add the fields asked after the selection
+**Step 3.** Profile setup (in case the dbt init command fails)
 
 1. Edit the $HOME/.dbt/profiles.yml file within the .dbt folder (create if it does not exist).
 2. Add the following configuration, replacing placeholders with your SAP HANA credentials:
@@ -71,7 +64,7 @@ my-sap-hana-cloud-profile:
       threads: <threads> # Number of threads you want to use
 ```
 
-**Step 6.** Link Profile to dbt Project
+**Step 6.** Link Profile to dbt Project(in case the dbt init command fails)
 - In your dbt_project.yml file (located in your dbt project folder), reference the profile name:
   ```yaml
   profile: my-sap-hana-cloud-profile

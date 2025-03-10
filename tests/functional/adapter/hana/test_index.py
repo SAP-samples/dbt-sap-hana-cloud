@@ -126,7 +126,7 @@ class TestHanaIndex:
              JOIN INDEX_COLUMNS C
                 ON I.INDEX_OID = C.INDEX_OID
              WHERE I.SCHEMA_NAME = '{unique_schema}'
-                AND I.TABLE_NAME = upper('{table_name}')
+                AND I.TABLE_NAME = '{table_name}'
                 GROUP BY I.INDEX_NAME, I.INDEX_TYPE, I.CONSTRAINT
                 ORDER BY I.INDEX_NAME;
         """
