@@ -199,9 +199,8 @@ class SapHanaCloudConnectionManager(SQLConnectionManager):
         activity = "success"
         message = "OK"
         try:
-            if cursor is not None:
-                if cursor.rowcount is not None:
-                    num_rows = cursor.rowcount
+            if cursor is not None and cursor.rowcount is not None:
+                num_rows = cursor.rowcount
 
             message = f"OK {num_rows}"
 
