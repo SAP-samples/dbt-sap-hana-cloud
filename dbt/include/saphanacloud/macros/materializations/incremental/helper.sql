@@ -6,7 +6,7 @@
     SELECT COLUMN_NAME
     FROM CONSTRAINTS
     WHERE SCHEMA_NAME = '{{ schema_name }}'
-      AND TABLE_NAME = upper('{{ table_name }}')
+      AND TABLE_NAME = '{{ table_name }}'
       AND IS_PRIMARY_KEY = 'TRUE';
   {% endset %}
   
