@@ -64,9 +64,7 @@
     WHERE SCHEMA_NAME = '{{ schema_name }}'
   {% endset %}
 
-  {% set schema_exists %}
-    {{ run_query(schema_check_query).rows | length > 0 }}
-  {% endset %}
+  {% set schema_exists = run_query(schema_check_query).rows | length > 0 %}
 
   {% if not schema_exists %}
     {%- call statement('schema_name') -%}

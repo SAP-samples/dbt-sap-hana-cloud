@@ -1,11 +1,15 @@
-{% macro saphanacloud__get_show_grant_sql(relation) %}
-    SELECT *
-    FROM GRANTED_PRIVILEGES
-    WHERE OBJECT_NAME = ('{{ relation.identifier }}')
-    {% if relation.schema %}
-        AND SCHEMA_NAME = ('{{ relation.schema }}')
-    {% endif %}
-{% endmacro %}
+{%- macro saphanacloud__get_show_grant_sql(relation) -%}
+    select 
+        COALESCE('"'|| GRANTEE_SCHEMA_NAME ||'".','')||'"'||"GRANTEE"||'"' AS "GRANTEE",
+        "PRIVILEGE"
+    from "SYS"."GRANTED_PRIVILEGES"  
+    where
+        "GRANTOR" = CURRENT_USER
+        and "GRANTEE" != CURRENT_USER
+        and "SCHEMA_NAME" = '{{ relation.schema }}'
+        and "OBJECT_NAME" = '{{ relation.identifier }}'
+{%- endmacro -%}
+
 
 {%- macro saphanacloud__support_multiple_grantees_per_dcl_statement() -%}
     {{ return(False) }}

@@ -1,7 +1,7 @@
 {% macro saphanacloud__get_catalog_tables_sql(information_schema) %}
     select
         schema_name as owner,
-        schema_name as table_database,  -- Include database for tables
+        '{{ target.database }}'  as table_database,  -- Include database for tables
         schema_name as table_schema,
         table_name,
         case
@@ -17,7 +17,7 @@
     -- Include views explicitly
     select
         schema_name as owner,
-        schema_name as table_database,  -- Include database for views
+        '{{ target.database }}'  as table_database,  -- Include database for views
         schema_name as table_schema,
         view_name as table_name,
         'VIEW' as table_type
@@ -29,7 +29,7 @@
     -- Get columns for tables
     select
         schema_name as owner,
-        schema_name as table_database,  -- Include database for columns in tables
+        '{{ target.database }}'  as table_database,  -- Include database for columns in tables
         schema_name as table_schema,
         table_name,
         column_name,
@@ -46,7 +46,7 @@
     -- Get columns for views
     select
         schema_name as owner,
-        schema_name as table_database,  -- Include database for columns in views
+        '{{ target.database }}'  as table_database,  -- Include database for columns in views
         schema_name as table_schema,
         view_name as table_name,
         column_name,

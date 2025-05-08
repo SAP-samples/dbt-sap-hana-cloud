@@ -19,6 +19,10 @@
   -- as above, the backup_relation should not already exist
   {%- set preexisting_backup_relation = load_cached_relation(backup_relation) -%}
   
+   -- load unique key properties
+   {%- set unique_key = config.get('unique_key') -%}
+   {%- set unique_as_primary = config.get('unique_as_primary') -%}
+
   -- drop the temp relations if they exist already in the database
   {% if preexisting_backup_relation is not none %}
    {{ drop_relation_if_exists(preexisting_intermediate_relation) }}
@@ -80,8 +84,22 @@
       {% endif %}
     {% endif %}
   {% endif %}
-  
 
+
+  {#-- unique keys as primary key block--#}
+  {% if unique_key and unique_as_primary%}
+      {% if unique_as_primary is not boolean %}
+          {% do exceptions.raise_compiler_error("`unique_as_primary` must be a boolean.") %}
+
+      {% else %}
+          {% set existing_pk_columns = get_existing_primary_key_columns(intermediate_relation, unique_key) %}
+          {% if not existing_pk_columns %}
+            {% set alter_sql = generate_alter_primary_key_sql(intermediate_relation, unique_key,existing_pk_columns)%}
+            {% do run_query(alter_sql) %}
+          {% endif %}  
+      {% endif %}
+  {% endif %} 
+  
   {{ adapter.rename_relation(intermediate_relation, target_relation) }}
 
   {% do create_indexes(target_relation) %}
