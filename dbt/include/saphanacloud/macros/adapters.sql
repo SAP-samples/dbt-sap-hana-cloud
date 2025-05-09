@@ -14,7 +14,7 @@
   SELECT INDEX_NAME 
   FROM INDEXES 
   WHERE SCHEMA_NAME = '{{ schema_name }}' 
-    AND TABLE_NAME = upper('{{ table_name }}') 
+    AND TABLE_NAME = '{{ table_name }}' 
     AND INDEX_NAME = '{{ index_name }}';
 
  {%- endmacro %}   
@@ -68,7 +68,7 @@
 
   {% if not schema_exists %}
     {%- call statement('schema_name') -%}
-      CREATE SCHEMA {{ schema_name }};
+      CREATE SCHEMA "{{ schema_name }}";
     {%- endcall -%}
   {% endif %}
 
