@@ -1,6 +1,6 @@
 {%- macro saphanacloud__get_show_grant_sql(relation) -%}
     select 
-        COALESCE('"'|| GRANTEE_SCHEMA_NAME ||'".','')||'"'||"GRANTEE"||'"' AS "GRANTEE",
+        COALESCE(GRANTEE_SCHEMA_NAME || '.', '') || GRANTEE AS GRANTEE,
         "PRIVILEGE"
     from "SYS"."GRANTED_PRIVILEGES"  
     where
