@@ -411,3 +411,38 @@ Example 3 of 3 of required macros that does not have a default implementation.
     {% endif %}
     
 {% endmacro %}
+
+{% macro saphanacloud__set_nse_page_loadable(relation, nse_page_loadable) %}
+    {% if nse_page_loadable.type == 'table' %}
+        {% set sql %}ALTER TABLE {{ relation }} PAGE LOADABLE;{% endset %}
+    {% elif nse_page_loadable.type == 'column' and nse_page_loadable.names is defined %}
+        {% set columns = saphanacloud__get_columns_in_relation(relation) %}
+        {% if nse_page_loadable.names is string %}
+            {% set col_names = [nse_page_loadable.names] %}
+        {% else %}
+            {% set col_names = nse_page_loadable.names %}
+        {% endif %}
+        {% set alter_clauses = [] %}
+        {% for name in col_names %}
+            {% set col = columns | selectattr("name", "equalto", name) | list | first %}
+            {% if col is not defined %}
+                {{ exceptions.raise_compiler_error("Column '" ~ name ~ "' does not exist in relation " ~ relation) }}
+            {% endif %}
+            {# Build type with size/precision/scale if needed #}
+            {% set dtype = col.dtype | upper %}
+            {% if dtype in ['VARCHAR', 'NVARCHAR', 'CHAR'] and col.char_size is defined and col.char_size %}
+                {% set type_str = dtype ~ '(' ~ col.char_size ~ ')' %}
+            {% elif dtype in ['DECIMAL', 'NUMERIC'] and col.numeric_precision is defined and col.numeric_scale is defined %}
+                {% set type_str = dtype ~ '(' ~ col.numeric_precision ~ ',' ~ col.numeric_scale ~ ')' %}
+            {% else %}
+                {% set type_str = dtype %}
+            {% endif %}
+            {% set clause %}"{{ col.name }}" {{ type_str }} PAGE LOADABLE{% endset %}
+            {% do alter_clauses.append(clause) %}
+        {% endfor %}
+        {% set sql %}ALTER TABLE {{ relation }} ALTER ({{ alter_clauses | join(', ') }});{% endset %}
+    {% else %}
+        {{ exceptions.raise_compiler_error("Invalid NSE PAGE LOADABLE config: " ~ nse_page_loadable | tojson) }}
+    {% endif %}
+    {% do run_query(sql) %}
+{% endmacro %}
