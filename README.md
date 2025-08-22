@@ -364,7 +364,7 @@ CREATE VIRTUAL TABLE RAW_DATA.VT_PRODUCTS AT "CRM"."NULL"."DEFAULT"."PRODUCTS";
 > Note: If the name of the virtual table should be different from the name of the table in the remote source, you can use the `identifier` property of the table in the source definition.
 
 ### SAP HANA Native Storage Extension (NSE)
-You can configure either the table or the column of a table to be Page Loadable this can be done in both incremental and table materialization. In the below exapmle you can see the config:
+You can enable NSE for tables or columns by configuring either the table or columns of a table to be page loadable. This can be done in both incremental and table materialization. In the below example you can see the config:
 
 ```sql
 {{ config(
