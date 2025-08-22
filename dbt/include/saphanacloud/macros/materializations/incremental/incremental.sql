@@ -42,7 +42,7 @@
 {% materialization incremental, adapter='saphanacloud', supported_languages=['sql'] -%}
 
   {% set partitioned_query = false %}
-
+  {% set nse_page_loadable = config.get('nse_page_loadable', none) %}
 
   -- Validating query partitions
 
@@ -51,6 +51,7 @@
       {% set partitioned_query = true %}
       
       {% set query_partitions = config.get('query_partitions') %}
+      
 
 
       {% if query_partitions is not iterable or query_partitions is string or query_partitions is mapping %}
@@ -253,6 +254,10 @@
 
   {% set should_revoke = should_revoke(existing_relation, full_refresh_mode) %}
   {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
+
+  {% if nse_page_loadable is not none %}
+    {% do saphanacloud__set_nse_page_loadable(this, nse_page_loadable) %}
+  {% endif %}
 
   {% do persist_docs(target_relation, model) %}
 
