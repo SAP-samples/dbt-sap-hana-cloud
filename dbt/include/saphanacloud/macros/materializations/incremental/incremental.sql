@@ -42,7 +42,7 @@
 {% materialization incremental, adapter='saphanacloud', supported_languages=['sql'] -%}
 
   {% set partitioned_query = false %}
-
+  {% set nse_page_loadable = config.get('nse_page_loadable', none) %}
 
   -- Validating query partitions
 
@@ -51,6 +51,7 @@
       {% set partitioned_query = true %}
       
       {% set query_partitions = config.get('query_partitions') %}
+      
 
 
       {% if query_partitions is not iterable or query_partitions is string or query_partitions is mapping %}
@@ -135,12 +136,18 @@
           {% set build_sql = get_create_table_as_sql(False, intermediate_relation, sql) %}
           {% set need_swap = true %}
       {% else %}
-        {% do run_query(get_create_table_as_sql(True, temp_relation, sql)) %}
+        {% set temp_sql = get_create_table_as_sql(False, intermediate_relation, sql) %}
+        {% call statement("main") %}
+        Do BEGIN
+            {{ temp_sql }}
+        END;
+        {% endcall %}
         {% do adapter.expand_target_column_types(
                 from_relation=temp_relation,
                 to_relation=target_relation) %}
         {#-- Process schema changes. Returns dict of changes if successful. Use source columns for upserting/merging --#}
         {% set dest_columns = process_schema_changes(on_schema_change, temp_relation, existing_relation) %}
+        {% do check_and_update_column_sizes(existing_relation, temp_relation) %}
         {% if not dest_columns %}
           {% set dest_columns = adapter.get_columns_in_relation(existing_relation) %}
         {% endif %}
@@ -155,7 +162,9 @@
       {% endif %}
 
       {% call statement("main") %}
+      Do BEGIN
           {{ build_sql }}
+      END;
       {% endcall %}
 
       {% do to_drop.append(temp_relation) %}
@@ -231,18 +240,24 @@
           {% endif %}  
       {% endif %}
   {% endif %} 
-
-
-
+  
   {#-- swapping relations --#}
   {% if need_swap %}
-      {% do adapter.rename_relation(existing_relation, backup_relation) %}
+      {% if existing_relation.is_view %}
+        {% do adapter.drop_relation(existing_relation) %}
+      {% else %}
+        {% do adapter.rename_relation(existing_relation, backup_relation) %}
+      {% endif %}
       {% do adapter.rename_relation(intermediate_relation, target_relation) %}
       {% do to_drop.append(backup_relation) %}
   {% endif %}
 
   {% set should_revoke = should_revoke(existing_relation, full_refresh_mode) %}
   {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
+
+  {% if nse_page_loadable is not none %}
+    {% do saphanacloud__set_nse_page_loadable(this, nse_page_loadable) %}
+  {% endif %}
 
   {% do persist_docs(target_relation, model) %}
 

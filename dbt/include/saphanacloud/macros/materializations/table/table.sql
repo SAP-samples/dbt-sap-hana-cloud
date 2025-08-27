@@ -1,7 +1,7 @@
 {% materialization table, adapter='saphanacloud', supported_languages=['sql', 'python'] -%}
   {% set relation = adapter.dispatch('list_relations_without_caching')(adapter.Relation.create(schema=this.schema)) %}
   
-
+   {% set nse_page_loadable = config.get('nse_page_loadable', none) %}
    {% set grant_config = config.get('grants') %}
    {% set language = model['language'] %}
    {%- set existing_relation = load_cached_relation(this) -%}
@@ -108,6 +108,10 @@
 
   {% set should_revoke = should_revoke(existing_relation, full_refresh_mode=True) %}
   {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
+
+  {% if nse_page_loadable is not none %}
+        {% do saphanacloud__set_nse_page_loadable(this, nse_page_loadable) %}
+  {% endif %}
 
   {% do persist_docs(target_relation, model) %}
 

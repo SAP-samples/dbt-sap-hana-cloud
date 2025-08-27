@@ -107,8 +107,8 @@ class BaseTableTypeTests:
             query = f"""
             SELECT IS_COLUMN_TABLE
             FROM TABLES
-            WHERE SCHEMA_NAME = '{schema_name.upper()}'
-              AND TABLE_NAME = '{model_name.upper()}';
+            WHERE SCHEMA_NAME = '{schema_name}'
+              AND TABLE_NAME = '{model_name}';
             """
             result = project.run_sql(query, fetch="one")
             assert result is not None, f"Table {schema_name}.{model_name} does not exist."
@@ -119,32 +119,32 @@ class BaseTableTypeTests:
             ), f"Expected {expected_type} table for {model_name}, but got {actual_type}."
 
 
-# class TestRowColumnTables(BaseTableTypeTests):
-#     @pytest.fixture(scope="class")
-#     def models(self):
-#         return {
-#             "row_table.sql": """
-#             {{ config(
-#                 materialized='table',
-#                 table_type='row'
-#             ) }}
-#             SELECT 1 AS id, 'test' AS name from dummy
-#             """,
-#             "column_table.sql": """
-#             {{ config(
-#                 materialized='table',
-#                 table_type='column'
-#             ) }}
-#             SELECT 1 AS id, 'test' AS name from dummy
-#             """,
-#         }
+class TestRowColumnTables(BaseTableTypeTests):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "row_table.sql": """
+            {{ config(
+                materialized='table',
+                table_type='row'
+            ) }}
+            SELECT 1 AS id, 'test' AS name from dummy
+            """,
+            "column_table.sql": """
+            {{ config(
+                materialized='table',
+                table_type='column'
+            ) }}
+            SELECT 1 AS id, 'test' AS name from dummy
+            """,
+        }
 
-#     @pytest.fixture(scope="class")
-#     def expected_table_types(self):
-#         return {
-#             "row_table": "row",
-#             "column_table": "column",
-#         }
+    @pytest.fixture(scope="class")
+    def expected_table_types(self):
+        return {
+            "row_table": "row",
+            "column_table": "column",
+        }
     
 class TestIncrementalPredicatesDeleteInsertEmpty(BaseIncrementalPredicates):
     @pytest.fixture(scope="class")
