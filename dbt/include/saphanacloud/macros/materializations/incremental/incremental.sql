@@ -136,7 +136,7 @@
           {% set build_sql = get_create_table_as_sql(False, intermediate_relation, sql) %}
           {% set need_swap = true %}
       {% else %}
-        {% set temp_sql = get_create_table_as_sql(False, intermediate_relation, sql) %}
+        {% set temp_sql = get_create_table_as_sql(False, temp_relation, sql) %}
         {% call statement("main") %}
         Do BEGIN
             {{ temp_sql }}

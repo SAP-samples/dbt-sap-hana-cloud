@@ -14,7 +14,7 @@ def dbt_profile_target():
     return {
         'type' : 'saphanacloud' , # This should match the `type` returned by your adapter's `Credentials` class
         'host' : os.getenv('DBT_HANA_HOST'),  # Replace with your SAP HANA host address
-        'port': int(os.getenv('DBT_HANA_PORT')),  # The default port for SAP HANA; change if necessary
+        'port': os.getenv('DBT_HANA_PORT'),  # The default port for SAP HANA; change if necessary
         'user': os.getenv('DBT_HANA_USER'),  # Your SAP HANA username
         'password': os.getenv('DBT_HANA_PASSWORD'),  # Your SAP HANA password
         'database': os.getenv('DBT_HANA_DATABASE'),  # The database you want to connect to
