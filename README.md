@@ -114,6 +114,37 @@ my-sap-hana-cloud-profile:
 
 ## DBT SAP HANA Cloud specific configuration
 
+### Gathering connection information from cloud foundry environment variables
+
+If dbt is executed in Cloud Foundry, it is possible to read the connection information directly from the Cloud Foundry environment variable `VCAP_SERVICES`, instead of specifying it manually in the `profiles.yml` file.
+
+To enable this, the service instance that provides the connection information (e.g., user-provided service, hana-schema) must be bound to the application that executes dbt. The following properties must be included in the `credentials` section of the service binding:
+
+```json
+{
+  "schema"  : "...",
+  "user"    : "...",
+  "password": "...",
+  "host"    : "...",
+  "port"    : "..."
+}
+```
+
+The name of the service must be specified in the `cf_service_name` property of the dbt profile.
+
+```yaml
+my-sap-hana-cloud-profile:
+  target: dev
+  outputs:
+    dev:
+      type: saphanacloud
+      database: <database> # Database to connect to
+      threads: <threads> # Number of threads you want to use
+      cf_service_name: <name> # Name of the cloud foundry service
+```
+
+
+
 ### Table Type
 - If you want to define the type of table created for an incremental model or a table model, you can do so by adding this configuration to the model inside the `config` block.
   ```
@@ -362,6 +393,7 @@ CREATE VIRTUAL TABLE RAW_DATA.SUPPLIERS AT "CRM"."NULL"."DEFAULT"."SUPPLIERS";
 CREATE VIRTUAL TABLE RAW_DATA.VT_PRODUCTS AT "CRM"."NULL"."DEFAULT"."PRODUCTS";
 ```
 > Note: If the name of the virtual table should be different from the name of the table in the remote source, you can use the `identifier` property of the table in the source definition.
+
 
 ### SAP HANA Native Storage Extension (NSE)
 You can enable NSE for tables or columns by configuring either the table or columns of a table to be page loadable. This can be done in both incremental and table materialization. In the below example you can see the config:

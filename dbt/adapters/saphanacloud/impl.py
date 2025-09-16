@@ -422,7 +422,7 @@ class SapHanaCloudAdapter(SQLAdapter):
             return column
 
     def valid_incremental_strategies(self):
-        return ["append", "merge", "delete+insert"]
+        return ["append", "merge", "delete+insert", "microbatch"]
 
     @available
     @classmethod

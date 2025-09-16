@@ -12,6 +12,8 @@ from dbt_common.events.functions import fire_event
 from dbt.adapters.events.types import ConnectionUsed, SQLQuery, SQLQueryStatus
 from dbt_common.events.contextvars import get_node_info
 from dbt_common.utils import cast_to_str
+import os
+import json
 
 logger = AdapterLogger("saphanacloud")
 
@@ -94,12 +96,43 @@ DATATYPES = {
 
 @dataclass
 class SapHanaCloudCredentials(Credentials):
-    host: str
-    port: int
-    user: str
-    password: str
     database: str
+    host: Optional[str] = None
+    port: Optional[str] = None
+    user: Optional[str] = None
+    password: Optional[str] = None
+    schema: Optional[str] = None
+    cf_service_name: Optional[str] = None
     connect_timeout: int = 10
+
+    def __post_init__(self) -> None:
+
+        if self.cf_service_name is not None:
+
+            cf_services = json.loads(os.environ['VCAP_SERVICES'])
+
+            # Flatten all service entries into a single list
+            services_flattend = [
+                service
+                for services in cf_services.values()
+                for service in services
+            ]
+
+            hana_service = next(
+                (service for service in services_flattend if service["name"] == self.cf_service_name), None)
+
+            if hana_service is None:
+                raise DbtRuntimeError(
+                    "Non Cloud Foundry Service with the name available")
+
+            self.schema = hana_service["credentials"].get("schema")
+            self.user = hana_service["credentials"].get("user")
+            self.password = hana_service["credentials"].get("password")
+            self.host = hana_service["credentials"].get("host")
+            self.port = hana_service["credentials"].get("port")
+
+        if None in [self.schema, self.user, self.password, self.host, self.port]:
+            raise DbtRuntimeError("One or more required credentials are None")
 
     _ALIASES = {"dbname": "database", "pass": "password"}
 
@@ -209,9 +242,9 @@ class SapHanaCloudConnectionManager(SQLConnectionManager):
             message = f"An error occurred: {str(e)}"
 
         return AdapterResponse(
-        _message=message,
-        rows_affected=num_rows,
-        code=activity
+            _message=message,
+            rows_affected=num_rows,
+            code=activity
         )
 
     @contextmanager

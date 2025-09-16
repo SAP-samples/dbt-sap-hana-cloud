@@ -23,7 +23,7 @@ setup(
     packages=find_namespace_packages(include=["dbt", "dbt.*"]),
     include_package_data=True,
     install_requires=[
-        "dbt-core==1.9.0",
+        "dbt-core>=1.9.0",
         "dbt-adapters>=1.7.2",
         "dbt-common>=1.3.0",
         "hdbcli>=2.22.32"
