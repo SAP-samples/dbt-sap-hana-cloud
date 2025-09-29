@@ -98,7 +98,7 @@ DATATYPES = {
 class SapHanaCloudCredentials(Credentials):
     database: str
     host: Optional[str] = None
-    port: Optional[str] = None
+    port: Optional[int] = None
     user: Optional[str] = None
     password: Optional[str] = None
     schema: Optional[str] = None
