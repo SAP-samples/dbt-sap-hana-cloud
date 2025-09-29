@@ -420,6 +420,30 @@ nse_page_loadable = { "type": "column","names": "col1"}
 }}
 ```
 
+### Remote Subsciption Creation
+
+The remote subscription functionality enables real-time data streaming from external sources to SAP HANA Cloud using dbt. The `realtime` materialization creates and manages remote subscriptions that continuously synchronize data between a virtual table (source) and a target table (destination) in your SAP HANA Cloud database.
+
+#### How it works
+The `realtime` materialization:
+- Creates a remote subscription between a virtual table and target table
+- Perform full load based upon the chunk size
+- Distribute the remote subscription
+
+```
+{{
+  config(
+    materialized='realtime',
+    target_table='target_table_name',
+    virtual_table='virtual_table_name',
+    chunk_size=10
+  )
+}}
+```
+> **Note:** 
+> - You need to create the virtual table and target table in you database to create the remote subscrition and perform the further steps
+> - Monitor subscription performance and adjust `chunk_size` based on your data volume and network capacity
+
 ## Known Issues
 <!-- You may simply state "No known issues. -->
 No known issues
