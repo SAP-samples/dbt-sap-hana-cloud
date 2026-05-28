@@ -12,7 +12,7 @@
             AND UPPER(TABLE_NAME) = UPPER('{{ table_name }}');
             
             IF v_table_exists > 0 THEN
-                EXECUTE IMMEDIATE 'DROP TABLE {{ relation }}';
+                EXECUTE IMMEDIATE 'DROP TABLE {{ relation }} CASCADE';
             END IF;
         END;
     {% endset %}
